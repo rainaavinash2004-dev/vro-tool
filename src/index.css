@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { @apply bg-gray-50 text-gray-900 font-sans antialiased; }
+  h1, h2, h3, h4 { @apply font-semibold; }
+}
+
+@layer components {
+  .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6; }
+  .card-sm { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4; }
+
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-sap-blue text-white hover:bg-sap-dark focus:ring-sap-blue;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300;
+  }
+  .btn-danger {
+    @apply btn bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-300;
+  }
+  .btn-ghost {
+    @apply btn text-gray-500 hover:text-gray-700 hover:bg-gray-100;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-green { @apply badge bg-green-100 text-green-700; }
+  .badge-amber { @apply badge bg-amber-100 text-amber-700; }
+  .badge-red { @apply badge bg-red-100 text-red-700; }
+  .badge-blue { @apply badge bg-blue-100 text-blue-700; }
+  .badge-gray { @apply badge bg-gray-100 text-gray-600; }
+  .badge-purple { @apply badge bg-purple-100 text-purple-700; }
+
+  .input {
+    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent bg-white;
+  }
+  .label { @apply block text-xs font-medium text-gray-600 mb-1; }
+
+  .table-row { @apply border-b border-gray-50 hover:bg-gray-50 transition-colors; }
+  .th { @apply px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider; }
+  .td { @apply px-4 py-3 text-sm text-gray-700; }
+
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+  .section-title { @apply text-lg font-semibold text-gray-900; }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all text-gray-500 hover:text-gray-900 hover:bg-gray-100 text-sm font-medium;
+  }
+  .nav-item-active {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all bg-sap-light text-sap-blue text-sm font-semibold;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow;
+  }
+  .progress-bar {
+    @apply h-2 rounded-full bg-gray-100 overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Recharts tooltip */
+.recharts-tooltip-wrapper { z-index: 100; }
+.recharts-default-tooltip {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
+}
