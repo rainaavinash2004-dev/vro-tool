@@ -6,25 +6,34 @@
 -- ─── 1. User Profiles table (extends Supabase auth.users) ───────────────────
 CREATE TABLE IF NOT EXISTS profiles (
   id              UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email           TEXT,
   display_name    TEXT,
   role            TEXT NOT NULL DEFAULT 'viewer'
                   CHECK (role IN ('admin', 'editor', 'viewer')),
-  must_change_pwd BOOLEAN DEFAULT FALSE,
+  is_active       BOOLEAN DEFAULT TRUE,
+  must_change_pwd BOOLEAN DEFAULT TRUE,
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add missing columns if the table was already created without them
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email           TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_active       BOOLEAN DEFAULT TRUE;
 
 -- ─── 2. Auto-create profile row when a user is created in Auth ───────────────
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.profiles (id, display_name, role, must_change_pwd)
+  INSERT INTO public.profiles (id, email, display_name, role, is_active, must_change_pwd)
   VALUES (
     NEW.id,
+    NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'displayName', NEW.email),
     COALESCE(NEW.raw_user_meta_data->>'role', 'viewer'),
+    TRUE,
     COALESCE((NEW.raw_user_meta_data->>'mustChangePwd')::boolean, TRUE)
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email;
   RETURN NEW;
 END;
 $$;

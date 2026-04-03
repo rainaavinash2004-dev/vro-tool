@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('role, display_name, email, must_change_pwd, is_active')
+    .select('role, display_name, must_change_pwd, is_active')
     .eq('id', userId)
     .single()
   if (error) throw new Error(error.message)
@@ -16,11 +16,11 @@ async function fetchProfile(userId) {
 function buildUser(session, profile) {
   return {
     id:                 session.user.id,
-    email:              session.user.email,
+    email:              session.user.email,          // email always comes from the Auth session
     displayName:        profile.display_name || session.user.email,
     role:               profile.role,
     mustChangePassword: profile.must_change_pwd,
-    isActive:           profile.is_active,
+    isActive:           profile.is_active ?? true,   // defaults true if column not yet present
   }
 }
 
