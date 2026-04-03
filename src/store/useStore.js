@@ -367,7 +367,6 @@ const useStore = create(
       },
     })
   )
-)
 
 // ── Auto-save to server when state changes ─────────────────────────────────────
 useStore.subscribe((state, prevState) => {
