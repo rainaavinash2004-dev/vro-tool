@@ -248,14 +248,22 @@ const useStore = create(
           },
         })),
       updateMilestone: (id, data) =>
-        set((s) => ({
-          programGovernance: {
-            ...s.programGovernance,
-            milestones: s.programGovernance.milestones.map((m) =>
-              m.id === id ? { ...m, ...data } : m
-            ),
-          },
-        })),
+        set((s) => {
+          const updatedMilestones = s.programGovernance.milestones.map((m) =>
+            m.id === id ? { ...m, ...data } : m
+          )
+          const goLiveMilestone = updatedMilestones.find((m) => m.id === id && m.name === 'Go-Live')
+          return {
+            programGovernance: {
+              ...s.programGovernance,
+              milestones: updatedMilestones,
+            },
+            // Keep project.goLiveDate in sync when the Go-Live milestone date changes
+            project: goLiveMilestone?.plannedDate
+              ? { ...s.project, goLiveDate: goLiveMilestone.plannedDate }
+              : s.project,
+          }
+        }),
       deleteMilestone: (id) =>
         set((s) => ({
           programGovernance: {
