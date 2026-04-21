@@ -56,32 +56,24 @@ const useAuthStore = create((set, get) => ({
    * Restores session from localStorage (Supabase handles the token automatically)
    * and subscribes to future auth state changes.
    */
-  checkAuth: async () => {
+  checkAuth: () => {
     // Safety net: never stay on loading spinner forever
     const timeout = setTimeout(() => set({ user: null, loading: false }), 8000)
 
-    // Register auth listener FIRST (unconditionally) so login/logout always works
+    // Supabase v2 recommended pattern: onAuthStateChange fires
+    // INITIAL_SESSION immediately with the current session, so we
+    // never need a separate getSession() call (which would compete
+    // for the same internal auth lock and cause the "lock stolen" error).
     supabase.auth.onAuthStateChange(async (_event, session) => {
+      clearTimeout(timeout)
       if (!session) { set({ user: null, loading: false }); return }
       try {
         const profile = await fetchProfile(session.user.id, session.user.email)
-        set({ user: buildUser(session, profile), loading: false })
+        set({ user: buildUser(session, profile), loading: false, error: null })
       } catch {
         set({ user: null, loading: false })
       }
     })
-
-    // Also check for an existing session on page load
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      clearTimeout(timeout)
-      if (!session) { set({ loading: false }); return }
-      const profile = await fetchProfile(session.user.id, session.user.email)
-      set({ user: buildUser(session, profile), loading: false, error: null })
-    } catch {
-      clearTimeout(timeout)
-      set({ user: null, loading: false })
-    }
   },
 
   /**
