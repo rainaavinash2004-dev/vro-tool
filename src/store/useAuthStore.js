@@ -90,11 +90,13 @@ const useAuthStore = create((set, get) => ({
   },
 
   /**
-   * Sign out of Supabase Auth (clears token from localStorage automatically).
+   * Sign out — clears local state immediately so the UI responds
+   * instantly, then tells Supabase to invalidate the server session
+   * in the background (no await so the auth lock is never blocked).
    */
-  logout: async () => {
-    await supabase.auth.signOut()
-    set({ user: null, error: null })
+  logout: () => {
+    set({ user: null, error: null, loading: false })
+    supabase.auth.signOut().catch(() => {})   // fire-and-forget
   },
 
   /**
