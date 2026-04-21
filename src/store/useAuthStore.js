@@ -57,25 +57,31 @@ const useAuthStore = create((set, get) => ({
    * and subscribes to future auth state changes.
    */
   checkAuth: async () => {
+    // Safety net: never stay on loading spinner forever
+    const timeout = setTimeout(() => set({ user: null, loading: false }), 8000)
+
+    // Register auth listener FIRST (unconditionally) so login/logout always works
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) { set({ user: null, loading: false }); return }
+      try {
+        const profile = await fetchProfile(session.user.id, session.user.email)
+        set({ user: buildUser(session, profile), loading: false })
+      } catch {
+        set({ user: null, loading: false })
+      }
+    })
+
+    // Also check for an existing session on page load
     try {
       const { data: { session } } = await supabase.auth.getSession()
+      clearTimeout(timeout)
       if (!session) { set({ loading: false }); return }
       const profile = await fetchProfile(session.user.id, session.user.email)
       set({ user: buildUser(session, profile), loading: false, error: null })
     } catch {
+      clearTimeout(timeout)
       set({ user: null, loading: false })
     }
-
-    // Listen for sign-in / sign-out events (e.g. token refresh, other tabs)
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!session) { set({ user: null }); return }
-      try {
-        const profile = await fetchProfile(session.user.id, session.user.email)
-        set({ user: buildUser(session, profile) })
-      } catch {
-        set({ user: null })
-      }
-    })
   },
 
   /**
