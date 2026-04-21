@@ -17,6 +17,9 @@
     "xlsx": "^0.18.5",
     "zustand": "^4.5.0"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
