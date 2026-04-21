@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   LayoutDashboard, TrendingUp, ClipboardList, BarChart3, Shield,
   Upload, ChevronRight, RefreshCw, Menu, X, Users, LogOut, User,
-  KeyRound, ChevronDown
+  KeyRound, ChevronDown, Eye
 } from 'lucide-react'
 import useAuthStore, { useCanEdit, useIsAdmin } from './store/useAuthStore'
 import useStore from './store/useStore'
