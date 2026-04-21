@@ -1,14 +1,35 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 
-// ─── Helper: fetch the profile row for the current session user ───────────────
-async function fetchProfile(userId) {
+// ─── Helper: fetch (or auto-create) the profile row for the current user ─────
+async function fetchProfile(userId, userEmail) {
+  // maybeSingle() returns null instead of throwing when 0 rows found
   const { data, error } = await supabase
     .from('profiles')
     .select('role, display_name, must_change_pwd, is_active')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
+
   if (error) throw new Error(error.message)
+
+  // No profile row yet — create one on the fly so login is never blocked
+  if (!data) {
+    const { data: created, error: insertError } = await supabase
+      .from('profiles')
+      .upsert({
+        id:              userId,
+        email:           userEmail,
+        display_name:    userEmail,
+        role:            'viewer',
+        is_active:       true,
+        must_change_pwd: false,
+      }, { onConflict: 'id' })
+      .select('role, display_name, must_change_pwd, is_active')
+      .single()
+    if (insertError) throw new Error(insertError.message)
+    return created
+  }
+
   return data
 }
 
@@ -39,7 +60,7 @@ const useAuthStore = create((set, get) => ({
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { set({ loading: false }); return }
-      const profile = await fetchProfile(session.user.id)
+      const profile = await fetchProfile(session.user.id, session.user.email)
       set({ user: buildUser(session, profile), loading: false, error: null })
     } catch {
       set({ user: null, loading: false })
@@ -49,7 +70,7 @@ const useAuthStore = create((set, get) => ({
     supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!session) { set({ user: null }); return }
       try {
-        const profile = await fetchProfile(session.user.id)
+        const profile = await fetchProfile(session.user.id, session.user.email)
         set({ user: buildUser(session, profile) })
       } catch {
         set({ user: null })
@@ -64,7 +85,7 @@ const useAuthStore = create((set, get) => ({
     set({ error: null })
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { set({ error: error.message }); throw error }
-    const profile = await fetchProfile(data.user.id)
+    const profile = await fetchProfile(data.user.id, data.user.email)
     const user    = buildUser(data.session, profile)
     set({ user, error: null })
     return user
